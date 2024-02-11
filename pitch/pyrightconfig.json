@@ -1,0 +1,13 @@
+{
+    "typeCheckingMode": "basic",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": true,
+    "useLibraryCodeForTypes": true,
+    "strict": true,
+    "strictListInference": true,
+    "strictOptional": true,
+    "strictReturnType": true,
+    "strictTuple": true,
+    "disable": ["Redefinition", "WildcardImport"]
+}
+
