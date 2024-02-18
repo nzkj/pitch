@@ -45,10 +45,14 @@ class Scanner():
         return self.tokens
 
     def at_end(self) -> bool:
-        return self.current >= len(self.source)
+        print("At " + self.source[self.current] + " end: " + str(self.current) + ">=" + str(len(self.source)-1))
+        booleam = self.current >= len(self.source)-1
+        print(booleam)
+        return booleam
 
     def scanToken(self) -> None:
         c: str = self.advance()
+        print("scanning token: " + c)
         match c:
             case '(':
                 self.add_token(TokenType.LEFT_PAREN)
@@ -110,24 +114,25 @@ class Scanner():
     def scan_identifier(self) -> None:
         while self.is_alpha_numeric(self.peek()):
             self.advance()
-        text: str = self.source[self.start:self.current]
-        token_type: TokenType = self.keywords[text]
-        if token_type is None:
+        text: str = self.source[self.start:self.current+1]
+        print("Trying: " + text)
+        if text in self.keywords:
+            token_type: TokenType = self.keywords[text]
+        else:
             token_type = TokenType.IDENTIFIER
         self.add_token(token_type)
 
-    # TODO: Check
+    # Single character only
     def is_alpha(self, c: str) -> bool:
-        return (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or c == '_'
+        return c.isalpha() or c == '_'
     
-    # TODO: Check
+    # Single character only
+    def is_digit(self, c: str) -> bool:
+        return c.isdigit()
+    
     def is_alpha_numeric(self, c: str) -> bool:
         return self.is_alpha(c) or self.is_digit(c)
 
-    # TODO: Check
-    def is_digit(self, c: str) -> bool:
-        return c.isdigit() and 0 <= int(c) <= 9
-    
     def scan_string(self) -> None:
         while self.peek() != '"' and not self.at_end():
             if self.peek() == '\n':
@@ -141,7 +146,7 @@ class Scanner():
         # Advance through closing "
         self.advance()
 
-        self.add_token(TokenType.STRING, self.source[self.start+1:self.current-1])
+        self.add_token(TokenType.STRING, self.source[self.start+1:self.current-1]) # fix slice
     
     def scan_number(self) -> None:
         while self.is_digit(self.peek()):
@@ -154,7 +159,7 @@ class Scanner():
             while self.is_digit(self.peek()):
                 self.advance()
 
-        self.add_token(TokenType.NUMBER, float(self.source[self.start:self.current]))
+        self.add_token(TokenType.NUMBER, float(self.source[self.start:self.current+1]))
 
     def doublePeek(self) -> str:
         if self.current + 1 >= len(self.source):
@@ -177,9 +182,10 @@ class Scanner():
         
 
     def advance(self) -> str:
+        char: str = self.source[self.current]
         self.current += 1
-        return self.source[self.current]
+        return char
 
     def add_token(self, token_type: TokenType, literal: object = None) -> None:
-        text: str = self.source[self.start:self.current]
+        text: str = self.source[self.start:self.current+1]
         self.tokens.append(Token(token_type, text, literal, self.line));

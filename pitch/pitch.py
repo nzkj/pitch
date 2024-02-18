@@ -38,6 +38,7 @@ class Pitch():
         scanner = Scanner(source, self.error_handler)
         tokens: List[Token] = scanner.scanTokens()
 
+        print("\nTokens:")
         for token in tokens:
             print(token)
 
