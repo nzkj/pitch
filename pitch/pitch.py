@@ -18,7 +18,6 @@ class Pitch():
             self.run_repl()
     
     def run_file(self, filename: str):
-        print(filename)
         with open(filename, 'r') as file:
             self.run(file.read())
             
@@ -36,7 +35,7 @@ class Pitch():
 
     def run(self, source: str):
         scanner = Scanner(source, self.error_handler)
-        tokens: List[Token] = scanner.scanTokens()
+        tokens: List[Token] = scanner.scan_tokens()
 
         print("\nTokens:")
         for token in tokens:

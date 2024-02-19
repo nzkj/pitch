@@ -36,23 +36,19 @@ class Scanner():
         self.source = source
         self.error_handler = error_handler
 
-    def scanTokens(self) -> List[Token]:
+    def scan_tokens(self) -> List[Token]:
         while(not self.at_end()):
             self.start = self.current
-            self.scanToken()
+            self.scan_token()
         
         self.tokens.append(Token(TokenType.EOF, "", None, self.line))
         return self.tokens
 
     def at_end(self) -> bool:
-        print("At " + self.source[self.current] + " end: " + str(self.current) + ">=" + str(len(self.source)-1))
-        booleam = self.current >= len(self.source)-1
-        print(booleam)
-        return booleam
+        return self.current >= len(self.source)-1
 
-    def scanToken(self) -> None:
+    def scan_token(self) -> None:
         c: str = self.advance()
-        print("scanning token: " + c)
         match c:
             case '(':
                 self.add_token(TokenType.LEFT_PAREN)
@@ -84,7 +80,7 @@ class Scanner():
                 self.add_token(TokenType.GREATER_EQUAL if self.pair('=') else TokenType.GREATER_EQUAL)
             case '/':
                 if self.pair('/'):
-                    while self.peek() != '/n' and not self.at_end():
+                    while self.peek() != '\n' and not self.at_end():
                         self.advance()
                 else:
                     self.add_token(TokenType.SLASH)
@@ -114,12 +110,13 @@ class Scanner():
     def scan_identifier(self) -> None:
         while self.is_alpha_numeric(self.peek()):
             self.advance()
-        text: str = self.source[self.start:self.current+1]
-        print("Trying: " + text)
+        text: str = self.source[self.start:self.current]
+
         if text in self.keywords:
-            token_type: TokenType = self.keywords[text]
+            token_type = self.keywords[text]
         else:
             token_type = TokenType.IDENTIFIER
+
         self.add_token(token_type)
 
     # Single character only
@@ -146,22 +143,22 @@ class Scanner():
         # Advance through closing "
         self.advance()
 
-        self.add_token(TokenType.STRING, self.source[self.start+1:self.current-1]) # fix slice
+        self.add_token(TokenType.STRING, self.source[self.start+1:self.current-1])
     
     def scan_number(self) -> None:
         while self.is_digit(self.peek()):
             self.advance()
             
         # Look for a decimal part
-        if self.peek() == '.' and self.is_digit(self.doublePeek()):
+        if self.peek() == '.' and self.is_digit(self.double_peek()):
             self.advance()
 
             while self.is_digit(self.peek()):
                 self.advance()
 
-        self.add_token(TokenType.NUMBER, float(self.source[self.start:self.current+1]))
+        self.add_token(TokenType.NUMBER, float(self.source[self.start:self.current]))
 
-    def doublePeek(self) -> str:
+    def double_peek(self) -> str:
         if self.current + 1 >= len(self.source):
             return '\0'
         return self.source[self.current + 1]
@@ -187,5 +184,5 @@ class Scanner():
         return char
 
     def add_token(self, token_type: TokenType, literal: object = None) -> None:
-        text: str = self.source[self.start:self.current+1]
+        text: str = self.source[self.start:self.current]
         self.tokens.append(Token(token_type, text, literal, self.line));

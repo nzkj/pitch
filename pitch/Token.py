@@ -13,5 +13,5 @@ class Token():
         self.line = line
     
     def __str__(self) -> str:
-        return self.token_type.__str__() + " " + self.lexeme + " " + self.literal.__str__();
+        return self.token_type.__str__() + ", " + self.lexeme + ", " + self.literal.__str__();
 
