@@ -1,61 +1,61 @@
-from abc import ABC, abstractmethod
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, Union
 from Token import Token
+from tokentype import TokenType
 
-# -----
-# Visitor design pattern implementation
-# -----
-"""
-Notes:
-If I want to add a new operation to my expressions, `Evaluate`, I create a new object and define the operation function for each expression type.
-"""
+Expr = Union['Binary', 'Grouping', 'Literal', 'Unary']
 
-class Expr(ABC):
-    @abstractmethod
-    def accept(self, visitor: 'Visitor'):
-        raise NotImplementedError("Subclass must implement the accept() method")
+def parenthesize(name: str, *exprs: Expr) -> str:
+    """Create a parenthesized string representation of the expressions."""
+    string = f"({name}"
+    for expr in exprs:
+        string += f" {expr.print()}"
+    string += ")"
+    return string
 
-class Binary(Expr):
-    def __init__(self, left: Expr, operator: Token, right: Expr):
-        self.left = left
-        self.operator = operator
-        self.right = right
-    
-    def accept(self, visitor: 'Visitor') -> Any:
-        visitor.visit_binary(self)
-
-class EvaluateVisitor:
-    def visit_binary(self, binary: Binary):
-        # implementation of evaluate here
-        pass
-
-
-# -----
-# A more Pythonic approach?
-# -----
-"""
-Notes:
-If I want to add a new operation to my expressions, then I simply have to add it in the class.
-
-Python doesn't have the same issue as it supports dynamic dispatch (unlike C++, but I guess you can get similar functionality using dynamic_cast?).
- 
-In C++ we want to manage dependencies and be able to have functions that can be performed on any `Expr` object. We have something like `Expr->Evaluate()`, and the compiler will choose the overridden method.
-However, in Python we don't need things to be passed around by specified type - we don't need to have a base `Expr` object. We have "duck typing" such that we can call a method on an object and if it has it, it will do it - "If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck."
-
-If we add a new operation, we don't need all child classes to implement the operation for the code to compile.
-
-The Visitor design pattern still has the advantage of separating concerns, e.g. all evaluate functionality is in one place (object).
-
-Bit confusing but I think I understand.
-
-"""
-
+@dataclass
 class Binary:
-    def __init__(self, left: Expr, operator: Token, right: Expr):
-        self.left = left
-        self.operator = operator
-        self.right = right
+    left: Expr
+    operator: Token
+    right: Expr
+
+    def print(self) -> str:
+        return parenthesize(self.operator.lexeme, self.left, self.right)
+
+@dataclass
+class Grouping:
+    expression: Expr
+
+    def print(self) -> str:
+        return parenthesize("group", self.expression)
+
+@dataclass
+class Literal:
+    value: Any
+
+    def print(self) -> str:
+        return self.value.__str__()
+
+@dataclass
+class Unary:
+    operator: Token
+    right: Expr
+
+    def print(self) -> str:
+        return parenthesize(self.operator.lexeme, self.right)
+
+if __name__ == "__main__":
+    print("Running")
+
+    expression: Expr = Binary(
+        Unary(
+            Token(TokenType.MINUS, "-", None, 1), 
+            Literal(123)
+        ),
+        Token(TokenType.STAR, "*", None, 1),
+        Grouping(Literal(45.67))
+    )
     
-    def evaluate(self):
-        # implementation of evaluate here
-        pass
+    print("Results")
+    print(expression.print())
+
